@@ -300,6 +300,18 @@ if [ "$originalArgOne" = 'mongod' ]; then
 			EOJS
 		fi
 
+		if [ "${MONGO_RW_ANY_USERNAME:-admin}" ] && [ "${MONGO_RW_ANY_PASSWORD:-passw0rd}" ]; then
+			rootAuthDatabase='admin'
+
+			"${mongo[@]}" "$rootAuthDatabase" <<-EOJS
+				db.createUser({
+					user: $(_js_escape "$MONGO_RW_ANY_USERNAME"),
+					pwd: $(_js_escape "$MONGO_RW_ANY_PASSWORD"),
+					roles: [ { role: 'readWriteAnyDatabase', db: $(_js_escape "$rootAuthDatabase") } ]
+				})
+			EOJS
+		fi
+
 		export MONGO_INITDB_DATABASE="${MONGO_INITDB_DATABASE:-test}"
 
 		echo
